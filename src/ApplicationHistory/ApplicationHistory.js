@@ -2,15 +2,21 @@ import React, { useEffect, useState } from 'react';
 import './ApplicationHistory.css';
 
 const ApplicationHistory = () => {
-
   const [applications, setApplications] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const userId = 1;
+  const userId = sessionStorage.getItem("user_id"); // Ensure the user ID is retrieved from sessionStorage
+  const API_BASE_URL = "https://host-wo44.onrender.com/api"; // Replace with your backend URL
+
   useEffect(() => {
-    fetch(`/api/applications/history/${userId}`)
+    if (!userId) {
+      console.error("User ID is missing. Ensure the user is logged in.");
+      return;
+    }
+
+    fetch(`${API_BASE_URL}/applications/history/${userId}`)
       .then((response) => {
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error('Failed to fetch application history.');
         }
         return response.json();
       })
@@ -20,19 +26,22 @@ const ApplicationHistory = () => {
       })
       .catch((error) => {
         console.error('Error fetching application history:', error);
+        alert("Failed to fetch application history. Please try again later.");
       });
   }, [userId]);
+
   const filteredApplications = applications.filter(
     (app) =>
       app.job_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
   return (
     <div className="page-container">
-    <div className="content-wrap">
-    <div className="application-history">
-      <h2>Application History</h2>
-      <div className="search-bar">
+      <div className="content-wrap">
+        <div className="application-history">
+          <h2>Application History</h2>
+          <div className="search-bar">
             <input
               type="text"
               placeholder="Search applications..."
@@ -41,32 +50,32 @@ const ApplicationHistory = () => {
               className="search-input"
             />
           </div>
-      <table className="application-history-table">
-        <thead>
-          <tr>
-            <th>Job Title</th>
-            <th>Status</th>
-            <th>Applied Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredApplications.length > 0 ? (
-            filteredApplications.map((app) => (
-              <tr key={app.application_id}>
-                <td>{app.job_title}</td>
-                <td>{app.status}</td>
-                <td>{new Date(app.applied_at).toLocaleDateString()}</td>
+          <table className="application-history-table">
+            <thead>
+              <tr>
+                <th>Job Title</th>
+                <th>Status</th>
+                <th>Applied Date</th>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="3">No applications found.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-    </div>
+            </thead>
+            <tbody>
+              {filteredApplications.length > 0 ? (
+                filteredApplications.map((app) => (
+                  <tr key={app.application_id}>
+                    <td>{app.job_title}</td>
+                    <td>{app.status}</td>
+                    <td>{new Date(app.applied_at).toLocaleDateString()}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3">No applications found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
