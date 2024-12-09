@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Login.css";
 
+const API_BASE_URL = "https://host-wo44.onrender.com/api";
+
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,7 +13,7 @@ const LoginPage = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/login", {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -26,6 +28,7 @@ const LoginPage = () => {
         sessionStorage.setItem("lastName", data.lastName);
         sessionStorage.setItem("registerAs", data.registerAs);
         sessionStorage.setItem("profilePic", data.profilePic);
+
         if (data.registerAs === "employer") {
           sessionStorage.setItem("employerId", data.user_id);
         } else {
@@ -33,12 +36,7 @@ const LoginPage = () => {
         }
 
         alert("Login successful");
-
-        if (data.registerAs === "employee") {
-          navigate("/");
-        } else if (data.registerAs === "employer") {
-          navigate("/adminDashboard");
-        }
+        navigate(data.registerAs === "employee" ? "/" : "/adminDashboard");
       } else {
         alert(data.error || "Login failed");
       }

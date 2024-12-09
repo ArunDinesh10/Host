@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import './Registration.css';
+import React, { useState } from "react";
+import "./Registration.css";
+
+const API_BASE_URL = "https://host-wo44.onrender.com/api";
 
 const Registration = () => {
-  const [userType, setUserType] = useState('employee');
+  const [userType, setUserType] = useState("employee");
 
   const handleUserTypeChange = (e) => {
     setUserType(e.target.value);
@@ -14,20 +16,33 @@ const Registration = () => {
     const lastName = e.target.lastName.value;
     const email = e.target.email.value;
     const password = e.target.password.value;
-    const response = await fetch('http://localhost:5000/api/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ firstName, lastName, email, password, userType }),
-    });
-    const data = await response.json();
-    if (response.ok) {
-      alert(data.message);
-      e.target.reset();
-      setUserType('employee');
-    } else {
-      alert(data.error);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+          userType,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message);
+        e.target.reset();
+        setUserType("employee");
+      } else {
+        alert(data.error);
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      alert("An unexpected error occurred. Please try again later.");
     }
   };
 
@@ -58,7 +73,7 @@ const Registration = () => {
               <input
                 type="radio"
                 value="employee"
-                checked={userType === 'employee'}
+                checked={userType === "employee"}
                 onChange={handleUserTypeChange}
               />
               Employee
@@ -67,7 +82,7 @@ const Registration = () => {
               <input
                 type="radio"
                 value="employer"
-                checked={userType === 'employer'}
+                checked={userType === "employer"}
                 onChange={handleUserTypeChange}
               />
               Employer
