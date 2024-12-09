@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { apiClient } from "../api/apiClient"; // Ensure this path is correct
-import "./JobAlertsPage.css"; // Ensure the CSS file is correctly imported
+import axios from "axios"; // Ensure axios is correctly installed
+import "./JobAlertsPage.css"; // Ensure the CSS file path is correct
 
 const JobAlertsPage = () => {
   const [jobAlerts, setJobAlerts] = useState([]);
@@ -9,9 +9,12 @@ const JobAlertsPage = () => {
     location: "",
     category: "",
   });
-  const [editingAlert, setEditingAlert] = useState(null); // Holds the alert being edited
-  const [showModal, setShowModal] = useState(false); // Controls modal visibility
-  const userId = sessionStorage.getItem("user_id"); // Ensure this key is correct
+  const [editingAlert, setEditingAlert] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const userId = sessionStorage.getItem("user_id"); // Ensure the user is logged in
+
+  // Backend API base URL
+  const API_BASE_URL = "https://host-wo44.onrender.com/api";
 
   useEffect(() => {
     fetchJobAlerts();
@@ -20,7 +23,7 @@ const JobAlertsPage = () => {
   // Fetch job alerts from the backend
   const fetchJobAlerts = async () => {
     try {
-      const response = await apiClient.get("/job-alerts", {
+      const response = await axios.get(`${API_BASE_URL}/job-alerts`, {
         params: { user_id: userId },
       });
       setJobAlerts(response.data);
@@ -34,7 +37,7 @@ const JobAlertsPage = () => {
   const handleCreateAlert = async (e) => {
     e.preventDefault();
     try {
-      const response = await apiClient.post("/job-alerts", {
+      const response = await axios.post(`${API_BASE_URL}/job-alerts`, {
         user_id: userId,
         ...newAlert,
       });
@@ -51,7 +54,7 @@ const JobAlertsPage = () => {
   const handleDeleteAlert = async (alertId) => {
     if (window.confirm("Are you sure you want to delete this alert?")) {
       try {
-        await apiClient.delete(`/job-alerts/${alertId}`);
+        await axios.delete(`${API_BASE_URL}/job-alerts/${alertId}`);
         fetchJobAlerts();
         alert("Job alert deleted successfully.");
       } catch (error) {
@@ -63,7 +66,6 @@ const JobAlertsPage = () => {
 
   // Handle initiating the edit process
   const handleEditAlert = (alert) => {
-    console.log("Editing Alert:", alert); // Debugging line
     setEditingAlert(alert);
     setNewAlert({
       keywords: alert.keywords,
@@ -77,8 +79,8 @@ const JobAlertsPage = () => {
   const handleUpdateAlert = async (e) => {
     e.preventDefault();
     try {
-      const response = await apiClient.put(
-        `/job-alerts/${editingAlert.alert_id}`,
+      const response = await axios.put(
+        `${API_BASE_URL}/job-alerts/${editingAlert.alert_id}`,
         { ...newAlert }
       );
       fetchJobAlerts();
@@ -190,7 +192,7 @@ const JobAlertsPage = () => {
         <div className="modal-overlay" onClick={closeModal}>
           <div
             className="modal-content"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
+            onClick={(e) => e.stopPropagation()}
           >
             <h3>Edit Job Alert</h3>
             <form onSubmit={handleUpdateAlert} className="modal-form">
