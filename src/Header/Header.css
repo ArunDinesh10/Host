@@ -1,0 +1,142 @@
+body {
+    background-color: #f8f9fa;
+    color: #212529;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .header {
+    background-color: #007bff;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .logo {
+    width: 150px;
+    cursor: pointer;
+  }
+  
+  .menu-icon {
+    display: none;
+    cursor: pointer;
+  }
+  
+  .navbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .navbar.active {
+    display: flex;
+  }
+  
+  .navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .nav-link {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    width: auto;
+    transition: color 0.3s ease;
+  }
+  
+  .nav-link:hover {
+    color: #ffd700;
+  }
+  
+  .logout-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .logout-button:hover {
+    color: #ffd700;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .dark-mode-toggle {
+    cursor: pointer;
+  }
+  
+  .dark-mode-icon {
+    font-size: 20px;
+    color: white;
+  }
+  
+  .dark-mode-icon.active {
+    color: #ffd700;
+  }
+  
+  .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .user-photo {
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+  }
+  
+  .user-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+  }
+  
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .menu-icon {
+      display: block;
+    }
+  
+    .navbar {
+      position: absolute;
+      top: 60px;
+      right: 0;
+      background-color: #007bff;
+      width: 100%;
+      flex-direction: column;
+      gap: 15px;
+      padding: 20px;
+      display: none;
+    }
+  
+    .navbar.active {
+      display: flex;
+    }
+  
+    .navbar-links {
+      flex-direction: column;
+    }
+  }
+  
