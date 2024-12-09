@@ -10,6 +10,9 @@ const JobSearch = () => {
   const [savedJobs, setSavedJobs] = useState(new Set());
   const userId = 1;
 
+  // Backend API base URL
+  const API_BASE_URL = "https://host-wo44.onrender.com/api";
+
   useEffect(() => {
     fetchJobs();
   }, [filters]);
@@ -21,7 +24,7 @@ const JobSearch = () => {
 
   const fetchJobs = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/jobs", {
+      const response = await axios.get(`${API_BASE_URL}/jobs`, {
         params: { ...filters },
       });
       setJobs(response.data);
@@ -32,9 +35,7 @@ const JobSearch = () => {
 
   const fetchAppliedJobs = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/applications/${userId}`
-      );
+      const response = await axios.get(`${API_BASE_URL}/applications/${userId}`);
       setAppliedJobs(new Set(response.data));
     } catch (error) {
       console.error("Error fetching applied jobs:", error);
@@ -43,9 +44,7 @@ const JobSearch = () => {
 
   const fetchSavedJobs = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/saved-jobs/${userId}`
-      );
+      const response = await axios.get(`${API_BASE_URL}/saved-jobs/${userId}`);
       setSavedJobs(new Set(response.data.map((job) => job.job_id)));
     } catch (error) {
       console.error("Error fetching saved jobs:", error);
@@ -55,7 +54,7 @@ const JobSearch = () => {
   const handleApply = async (jobId) => {
     if (appliedJobs.has(jobId)) {
       try {
-        await axios.delete("http://localhost:5000/api/applications/applied", {
+        await axios.delete(`${API_BASE_URL}/applications/applied`, {
           data: { userId, jobId },
         });
         setAppliedJobs((prev) => {
@@ -68,7 +67,7 @@ const JobSearch = () => {
       }
     } else {
       try {
-        await axios.post("http://localhost:5000/api/applications", {
+        await axios.post(`${API_BASE_URL}/applications`, {
           userId,
           jobId,
         });
@@ -82,7 +81,7 @@ const JobSearch = () => {
   const handleSave = async (jobId) => {
     if (savedJobs.has(jobId)) {
       try {
-        await axios.delete("http://localhost:5000/api/saved-jobs", {
+        await axios.delete(`${API_BASE_URL}/saved-jobs`, {
           data: { userId, jobId },
         });
         setSavedJobs((prev) => {
@@ -95,7 +94,7 @@ const JobSearch = () => {
       }
     } else {
       try {
-        await axios.post("http://localhost:5000/api/saved-jobs", {
+        await axios.post(`${API_BASE_URL}/saved-jobs`, {
           userId,
           jobId,
         });
