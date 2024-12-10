@@ -605,6 +605,10 @@ router.delete("/saved-jobs", (req, res) => {
 router.get("/saved-jobs/:userId", (req, res) => {
   const userId = req.params.userId;
 
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
+  }
+
   const query = `
     SELECT j.job_id, j.job_title, j.job_category, j.location, j.salary_range
     FROM saved_jobs sj
@@ -617,9 +621,16 @@ router.get("/saved-jobs/:userId", (req, res) => {
       console.error("Error fetching saved jobs:", err);
       return res.status(500).json({ error: "Failed to fetch saved jobs" });
     }
+
+    if (results.length === 0) {
+      console.log(`No saved jobs found for user ID: ${userId}`);
+      return res.status(200).json({ message: "No saved jobs found.", jobs: [] });
+    }
+
     res.status(200).json(results); // Send job details to the frontend
   });
 });
+
 // Fetch All Payments
 router.get("/payments", (req, res) => {
   const query = "SELECT * FROM payments";
