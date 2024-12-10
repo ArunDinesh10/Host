@@ -142,23 +142,50 @@ const JobPostings = () => {
             {accordionOpen ? "Close Create Job Form" : "Open Create Job Form"}
           </button>
           {accordionOpen && (
-            <div className="accordion-content">
-              <form className="job-form" onSubmit={handleCreateJob}>
-                {[{ name: "job_title", placeholder: "Job Title" }].map(
-                  (field, idx) => (
-                    <input
-                      key={idx}
-                      name={field.name}
-                      placeholder={field.placeholder}
-                      value={newJob[field.name]}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  )
-                )}
-                <button type="submit">Create Job</button>
-              </form>
-            </div>
+       <div className="accordion-content">
+       <form className="job-form" onSubmit={handleCreateJob}>
+         {[
+           { name: "job_title", placeholder: "Job Title", required: true },
+           {
+             name: "job_description",
+             placeholder: "Job Description",
+             type: "textarea",
+             required: true,
+           },
+           { name: "job_category", placeholder: "Category", required: true },
+           { name: "location", placeholder: "Location", required: true },
+           { name: "salary_range", placeholder: "Salary Range", required: true },
+           {
+             name: "requirements",
+             placeholder: "Requirements",
+             type: "textarea",
+             required: true,
+           },
+         ].map((field, idx) =>
+           field.type === "textarea" ? (
+             <textarea
+               key={idx}
+               name={field.name}
+               placeholder={field.placeholder}
+               value={newJob[field.name]}
+               onChange={handleInputChange}
+               required={field.required}
+             />
+           ) : (
+             <input
+               key={idx}
+               name={field.name}
+               placeholder={field.placeholder}
+               value={newJob[field.name]}
+               onChange={handleInputChange}
+               required={field.required}
+             />
+           )
+         )}
+         <button type="submit">Create Job</button>
+       </form>
+     </div>
+     
           )}
         </div>
         <div className="list-section">
