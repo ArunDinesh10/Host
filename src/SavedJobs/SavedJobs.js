@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./SavedJobs.css";
 
-const API_BASE_URL = "https://host-wo44.onrender.com/api";
-
 const SavedJobs = () => {
   const [savedJobs, setSavedJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const userId = sessionStorage.getItem("userId"); // Retrieve userId from session
+
+  // Retrieve userId from session storage
+  const userId = sessionStorage.getItem("userId");
 
   useEffect(() => {
     if (!userId) {
@@ -14,13 +14,10 @@ const SavedJobs = () => {
       return;
     }
 
-    fetch(`${API_BASE_URL}/saved-jobs/${userId}`)
+    fetch(`/api/saved-jobs/${userId}`)
       .then((response) => {
         if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error("No saved jobs found for this user.");
-          }
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error("Failed to fetch saved jobs");
         }
         return response.json();
       })
@@ -34,6 +31,10 @@ const SavedJobs = () => {
       job.job_category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (!userId) {
+    return <p>Please log in to view your saved jobs.</p>;
+  }
 
   return (
     <div className="page-container">
