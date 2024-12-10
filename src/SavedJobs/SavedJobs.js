@@ -5,31 +5,36 @@ import "./SavedJobs.css";
 const SavedJobs = () => {
   const [savedJobs, setSavedJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const userId = sessionStorage.getItem("userId"); // Fetch userId from sessionStorage
+  const [loading, setLoading] = useState(true); // Loading state
+  const userId = sessionStorage.getItem("user_id"); // Retrieve user ID from sessionStorage
+  console.log("Retrieved User ID:", userId); // Debugging
+
   const API_BASE_URL = "https://host-wo44.onrender.com/api"; // API base URL
 
-  // Redirect to login if user is not logged in
   useEffect(() => {
     if (!userId) {
       alert("User not logged in. Redirecting to login.");
-      window.location.href = "/login";
+      window.location.href = "/login"; // Redirect to login if user is not logged in
     } else {
       fetchSavedJobs();
     }
   }, [userId]);
 
-  // Fetch saved jobs for the logged-in user
   const fetchSavedJobs = async () => {
     try {
+      setLoading(true); // Set loading to true before fetching data
       const response = await axios.get(`${API_BASE_URL}/saved-jobs/${userId}`);
-      setSavedJobs(response.data);
+      setSavedJobs(response.data || []); // Ensure `savedJobs` is always an array
     } catch (error) {
       console.error("Error fetching saved jobs:", error);
-      alert("Failed to fetch saved jobs. Please try again.");
+      alert(
+        error.response?.data?.error || "Failed to fetch saved jobs. Please try again."
+      );
+    } finally {
+      setLoading(false); // Set loading to false after data is fetched
     }
   };
 
-  // Filter jobs based on search query
   const filteredJobs = savedJobs.filter(
     (job) =>
       job.job_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -51,7 +56,9 @@ const SavedJobs = () => {
             />
           </div>
           <h2>Saved Jobs</h2>
-          {filteredJobs.length > 0 ? (
+          {loading ? (
+            <p>Loading saved jobs...</p>
+          ) : filteredJobs.length > 0 ? (
             <table className="saved-jobs-table">
               <thead>
                 <tr>
