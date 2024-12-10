@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./JobPostings.css";
-import { apiClient } from "../api/apiClient"; // Ensure this path is correct
+
+// Use your deployed API base URL
+const API_BASE_URL = "https://host-wo44.onrender.com/api";
 
 const JobPostings = () => {
   const [jobs, setJobs] = useState([]);
@@ -25,12 +27,13 @@ const JobPostings = () => {
 
   const fetchJobs = async () => {
     try {
-      const response = await apiClient.get("/jobs", {
+      const response = await axios.get(`${API_BASE_URL}/jobs`, {
         params: { ...filters },
       });
       setJobs(response.data);
     } catch (error) {
       console.error("Error fetching jobs:", error);
+      alert("Failed to fetch jobs. Please try again later.");
     }
   };
 
@@ -42,7 +45,7 @@ const JobPostings = () => {
   const handleCreateJob = async (e) => {
     e.preventDefault();
     try {
-      await apiClient.post("/jobs", {
+      await axios.post(`${API_BASE_URL}/jobs`, {
         employer_id: employerId,
         ...newJob,
       });
@@ -58,16 +61,18 @@ const JobPostings = () => {
       setAccordionOpen(false);
     } catch (error) {
       console.error("Error creating job:", error);
+      alert("Failed to create job. Please try again.");
     }
   };
 
   const handleDeleteJob = async (jobId) => {
     if (window.confirm("Are you sure you want to delete this job?")) {
       try {
-        await apiClient.delete(`/jobs/${jobId}`);
+        await axios.delete(`${API_BASE_URL}/jobs/${jobId}`);
         fetchJobs();
       } catch (error) {
         console.error("Error deleting job:", error);
+        alert("Failed to delete job. Please try again.");
       }
     }
   };
@@ -84,19 +89,20 @@ const JobPostings = () => {
   };
 
   const handleEditJob = (job) => {
-    setEditingJob(job); // Set the job to be edited
-    setShowPopup(true); // Show the popup
+    setEditingJob(job);
+    setShowPopup(true);
   };
 
   const handleUpdateJob = async () => {
     try {
-      await apiClient.put(`/jobs/${editingJob.job_id}`, {
+      await axios.put(`${API_BASE_URL}/jobs/${editingJob.job_id}`, {
         ...editingJob,
       });
       fetchJobs();
-      setShowPopup(false); // Close the popup
+      setShowPopup(false);
     } catch (error) {
       console.error("Error updating job:", error);
+      alert("Failed to update job. Please try again.");
     }
   };
 
@@ -108,7 +114,6 @@ const JobPostings = () => {
   return (
     <div className="job-postings-container">
       <main className="content">
-        {/* Accordion for Job Creation */}
         <div className="accordion">
           <button
             className="accordion-header"
@@ -119,40 +124,15 @@ const JobPostings = () => {
           {accordionOpen && (
             <div className="accordion-content">
               <form className="job-form" onSubmit={handleCreateJob}>
-                {[
-                  { name: "job_title", placeholder: "Job Title", required: true },
-                  {
-                    name: "job_description",
-                    placeholder: "Job Description",
-                    required: true,
-                    type: "textarea",
-                  },
-                  { name: "job_category", placeholder: "Category" },
-                  { name: "location", placeholder: "Location" },
-                  { name: "salary_range", placeholder: "Salary Range" },
-                  {
-                    name: "requirements",
-                    placeholder: "Requirements",
-                    type: "textarea",
-                  },
-                ].map((field, idx) =>
-                  field.type === "textarea" ? (
-                    <textarea
-                      key={idx}
-                      name={field.name}
-                      placeholder={field.placeholder}
-                      value={newJob[field.name]}
-                      onChange={handleInputChange}
-                      required={field.required}
-                    />
-                  ) : (
+                {[{ name: "job_title", placeholder: "Job Title" }].map(
+                  (field, idx) => (
                     <input
                       key={idx}
                       name={field.name}
                       placeholder={field.placeholder}
                       value={newJob[field.name]}
                       onChange={handleInputChange}
-                      required={field.required}
+                      required
                     />
                   )
                 )}
@@ -161,8 +141,6 @@ const JobPostings = () => {
             </div>
           )}
         </div>
-
-        {/* Job List */}
         <div className="list-section">
           <h2>Job Postings</h2>
           <form className="filters" onSubmit={handleSearch}>
@@ -218,7 +196,6 @@ const JobPostings = () => {
         </div>
       </main>
 
-      {/* Popup for Job Editing */}
       {showPopup && (
         <div className="popup">
           <div className="popup-content">
