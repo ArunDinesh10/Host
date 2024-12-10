@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdminDashboard.css";
 import axios from "axios"; // Using axios for API calls
-const cors = require("cors");
-app.use(cors({ origin: "https://host-1-5nwp.onrender.com" }));
+
 
 const AdminDashboard = () => {
   const [jobList, setJobList] = useState([]);
