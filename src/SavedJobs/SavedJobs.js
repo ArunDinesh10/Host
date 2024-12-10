@@ -4,13 +4,19 @@ import './SavedJobs.css';
 const SavedJobs = () => {
   const [savedJobs, setSavedJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const userId = 1;
-  useEffect(() => {
-    fetch(`/api/saved-jobs/${userId}`)
-      .then((response) => response.json())
-      .then((data) => setSavedJobs(data))
-      .catch((error) => console.error('Error fetching saved jobs:', error));
-  }, [userId]);
+  const userId = sessionStorage.getItem("userId");
+
+  if (!userId) {
+    alert("User not logged in.");
+    window.location.href = "/login"; // Redirect to login if not logged in
+  }
+  const userId = sessionStorage.getItem("userId");
+
+  if (!userId) {
+    alert("User not logged in.");
+    window.location.href = "/login"; // Redirect to login if not logged in
+  }
+  
   const filteredJobs = savedJobs.filter(
     (job) =>
       job.job_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
