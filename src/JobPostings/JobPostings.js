@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./JobPostings.css";
-import { apiClient } from "../api/apiClient";
+import { apiClient } from "../api/apiClient"; // Ensure this path is correct
 
 const JobPostings = () => {
   const [jobs, setJobs] = useState([]);
@@ -36,7 +36,7 @@ const JobPostings = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewJob({ ...newJob, [name]: value });
+    setNewJob((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCreateJob = async (e) => {
@@ -90,7 +90,7 @@ const JobPostings = () => {
 
   const handleUpdateJob = async () => {
     try {
-      await apiClient.put(`jobs/${editingJob.job_id}`, {
+      await apiClient.put(`/jobs/${editingJob.job_id}`, {
         ...editingJob,
       });
       fetchJobs();
@@ -102,66 +102,67 @@ const JobPostings = () => {
 
   const handlePopupInputChange = (e) => {
     const { name, value } = e.target;
-    setEditingJob({ ...editingJob, [name]: value });
+    setEditingJob((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
     <div className="job-postings-container">
       <main className="content">
+        {/* Accordion for Job Creation */}
         <div className="accordion">
           <button
             className="accordion-header"
-            onClick={() => setAccordionOpen(!accordionOpen)}
+            onClick={() => setAccordionOpen((prev) => !prev)}
           >
             {accordionOpen ? "Close Create Job Form" : "Open Create Job Form"}
           </button>
           {accordionOpen && (
             <div className="accordion-content">
               <form className="job-form" onSubmit={handleCreateJob}>
-                <input
-                  name="job_title"
-                  placeholder="Job Title"
-                  value={newJob.job_title}
-                  onChange={handleInputChange}
-                  required
-                />
-                <textarea
-                  name="job_description"
-                  placeholder="Job Description"
-                  value={newJob.job_description}
-                  onChange={handleInputChange}
-                  required
-                />
-                <input
-                  name="job_category"
-                  placeholder="Category"
-                  value={newJob.job_category}
-                  onChange={handleInputChange}
-                />
-                <input
-                  name="location"
-                  placeholder="Location"
-                  value={newJob.location}
-                  onChange={handleInputChange}
-                />
-                <input
-                  name="salary_range"
-                  placeholder="Salary Range"
-                  value={newJob.salary_range}
-                  onChange={handleInputChange}
-                />
-                <textarea
-                  name="requirements"
-                  placeholder="Requirements"
-                  value={newJob.requirements}
-                  onChange={handleInputChange}
-                />
+                {[
+                  { name: "job_title", placeholder: "Job Title", required: true },
+                  {
+                    name: "job_description",
+                    placeholder: "Job Description",
+                    required: true,
+                    type: "textarea",
+                  },
+                  { name: "job_category", placeholder: "Category" },
+                  { name: "location", placeholder: "Location" },
+                  { name: "salary_range", placeholder: "Salary Range" },
+                  {
+                    name: "requirements",
+                    placeholder: "Requirements",
+                    type: "textarea",
+                  },
+                ].map((field, idx) =>
+                  field.type === "textarea" ? (
+                    <textarea
+                      key={idx}
+                      name={field.name}
+                      placeholder={field.placeholder}
+                      value={newJob[field.name]}
+                      onChange={handleInputChange}
+                      required={field.required}
+                    />
+                  ) : (
+                    <input
+                      key={idx}
+                      name={field.name}
+                      placeholder={field.placeholder}
+                      value={newJob[field.name]}
+                      onChange={handleInputChange}
+                      required={field.required}
+                    />
+                  )
+                )}
                 <button type="submit">Create Job</button>
               </form>
             </div>
           )}
         </div>
 
+        {/* Job List */}
         <div className="list-section">
           <h2>Job Postings</h2>
           <form className="filters" onSubmit={handleSearch}>
@@ -197,11 +198,14 @@ const JobPostings = () => {
                   <td>{job.location}</td>
                   <td>{job.salary_range}</td>
                   <td>
-                    <button className="btn" onClick={() => handleEditJob(job)}>
+                    <button
+                      className="btn edit-btn"
+                      onClick={() => handleEditJob(job)}
+                    >
                       Edit
                     </button>
                     <button
-                      className="btn"
+                      className="btn delete-btn"
                       onClick={() => handleDeleteJob(job.job_id)}
                     >
                       Delete
@@ -214,48 +218,20 @@ const JobPostings = () => {
         </div>
       </main>
 
+      {/* Popup for Job Editing */}
       {showPopup && (
         <div className="popup">
           <div className="popup-content">
             <h2>Edit Job</h2>
-            <input
-              name="job_title"
-              placeholder="Job Title"
-              value={editingJob.job_title}
-              onChange={handlePopupInputChange}
-              required
-            />
-            <textarea
-              name="job_description"
-              placeholder="Job Description"
-              value={editingJob.job_description}
-              onChange={handlePopupInputChange}
-              required
-            />
-            <input
-              name="job_category"
-              placeholder="Category"
-              value={editingJob.job_category}
-              onChange={handlePopupInputChange}
-            />
-            <input
-              name="location"
-              placeholder="Location"
-              value={editingJob.location}
-              onChange={handlePopupInputChange}
-            />
-            <input
-              name="salary_range"
-              placeholder="Salary Range"
-              value={editingJob.salary_range}
-              onChange={handlePopupInputChange}
-            />
-            <textarea
-              name="requirements"
-              placeholder="Requirements"
-              value={editingJob.requirements}
-              onChange={handlePopupInputChange}
-            />
+            {Object.keys(newJob).map((key, idx) => (
+              <input
+                key={idx}
+                name={key}
+                placeholder={key.replace("_", " ").toUpperCase()}
+                value={editingJob[key] || ""}
+                onChange={handlePopupInputChange}
+              />
+            ))}
             <button onClick={handleUpdateJob}>Update Job</button>
             <button onClick={() => setShowPopup(false)}>Cancel</button>
           </div>

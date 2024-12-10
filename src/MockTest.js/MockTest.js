@@ -8,21 +8,22 @@ const MockTest = () => {
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
 
-  const topics = ["React", "JavaScript", "HTML", "Angular"]; // Topics for dropdown
+  const topics = ["React", "JavaScript", "HTML", "Angular"]; // Topics for the dropdown
 
-  // Fetch questions for selected topic
+  // Fetch questions for the selected topic
   const handleTopicChange = async (e) => {
     const selectedTopic = e.target.value;
     setTopic(selectedTopic);
     setQuestions([]);
+    setAnswers({});
     setScore(null);
 
     if (selectedTopic) {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/mocktest/questions/${selectedTopic}`
+          `https://host-wo44.onrender.com/api/mocktest/questions/${selectedTopic}`
         );
-        setQuestions(response.data); // Assume API returns a list of questions
+        setQuestions(response.data); // API should return a list of questions with options and correct answers
       } catch (error) {
         console.error("Error fetching questions:", error);
         alert("Failed to fetch questions. Please try again.");
@@ -30,27 +31,29 @@ const MockTest = () => {
     }
   };
 
-  // Store selected answer for each question
+  // Store the selected answer for each question
   const handleOptionSelect = (questionId, selectedOption) => {
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: selectedOption, // Store answer by question ID
+      [questionId]: selectedOption,
     }));
   };
 
-  // Calculate score on submit
+  // Calculate the score on submission
   const handleSubmit = () => {
+    if (Object.keys(answers).length !== questions.length) {
+      alert("Please answer all questions before submitting.");
+      return;
+    }
+
     let correctCount = 0;
 
-    // Loop through the questions and compare selected answer with correct answer
-    questions.forEach((q, index) => {
-      const userAnswer = answers[index];
-      if (userAnswer === q.correct) {
+    questions.forEach((q) => {
+      if (answers[q.id] === q.correct) {
         correctCount++;
       }
     });
 
-    // Set the score after submission
     setScore(correctCount);
   };
 
@@ -58,8 +61,13 @@ const MockTest = () => {
     <div className="mock-test">
       <h1 className="mock-test-header">Mock Test</h1>
 
+      {/* Dropdown for selecting topic */}
       <div className="dropdown-container">
-        <select onChange={handleTopicChange} value={topic} className="dropdown">
+        <select
+          onChange={handleTopicChange}
+          value={topic}
+          className="dropdown"
+        >
           <option value="">Select a Topic</option>
           {topics.map((t, index) => (
             <option key={index} value={t}>
@@ -69,19 +77,21 @@ const MockTest = () => {
         </select>
       </div>
 
+      {/* Render questions */}
       {questions.length > 0 && (
         <div className="questions-container">
-          {questions.map((q, index) => (
-            <div key={index} className="question-block">
+          {questions.map((q) => (
+            <div key={q.id} className="question-block">
               <h3 className="question">{q.question}</h3>
               <div className="options-container">
                 {q.options.map((option, optIndex) => (
                   <label key={optIndex} className="option-label">
                     <input
                       type="radio"
-                      name={`question-${index}`}
+                      name={`question-${q.id}`}
                       value={option}
-                      onChange={() => handleOptionSelect(index, option)} // Store answer when an option is selected
+                      onChange={() => handleOptionSelect(q.id, option)}
+                      checked={answers[q.id] === option}
                     />
                     {option}
                   </label>
@@ -97,6 +107,7 @@ const MockTest = () => {
         </div>
       )}
 
+      {/* Display score after submission */}
       {score !== null && (
         <div className="result-container">
           <h2>

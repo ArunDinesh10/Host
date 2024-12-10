@@ -29,8 +29,14 @@ const ResumeBuilder = () => {
   };
 
   const handleSubmit = async () => {
+    // Validate required fields
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+
     try {
-      const response = await fetch("http://localhost:5000/api/resume", {
+      const response = await fetch("https://host-wo44.onrender.com/api/resume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -41,7 +47,8 @@ const ResumeBuilder = () => {
       }
 
       const data = await response.json();
-      console.log("Resume saved:", data);
+      console.log("Resume saved successfully:", data);
+      alert("Resume saved successfully!");
       generatePDF();
     } catch (error) {
       console.error("Error saving resume:", error);
@@ -53,13 +60,12 @@ const ResumeBuilder = () => {
     const pdf = new jsPDF();
     pdf.setFont("Times", "Normal");
 
-    let currentY = 20; // Starting Y position for text
+    let currentY = 20;
 
     const addPageIfNeeded = () => {
       if (currentY > 280) {
-        // Adjust this threshold if necessary
         pdf.addPage();
-        currentY = 20; // Reset Y position for new page
+        currentY = 20;
       }
     };
 
@@ -134,7 +140,7 @@ const ResumeBuilder = () => {
         const wrappedText = pdf.splitTextToSize(resp, 160);
 
         wrappedText.forEach((line) => {
-          pdf.circle(18, currentY, 0.5); // Bullet point
+          pdf.circle(18, currentY, 0.5);
           pdf.text(line, 22, currentY);
           currentY += 5;
           addPageIfNeeded();
@@ -161,7 +167,6 @@ const ResumeBuilder = () => {
       addPageIfNeeded();
     });
 
-    // Save PDF
     pdf.save("resume.pdf");
   };
 

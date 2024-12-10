@@ -9,11 +9,12 @@ const ProfileUpdate = () => {
     email: "",
     phoneNumber: "",
     location: "",
-    profile_pic: "", // Add profile_pic to state
+    profile_pic: "",
   });
   const [profilePhoto, setProfilePhoto] = useState(null);
   const employeeId =
-    sessionStorage.getItem("user_id") || sessionStorage.getItem("employerId"); // Get user_id from sessionStorage
+    sessionStorage.getItem("user_id") || sessionStorage.getItem("employerId");
+  const API_BASE_URL = "https://host-wo44.onrender.com/api"; // Use the deployed backend URL
 
   useEffect(() => {
     fetchEmployeeDetails();
@@ -21,24 +22,23 @@ const ProfileUpdate = () => {
 
   const fetchEmployeeDetails = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/employees/${employeeId}`
-      );
+      const response = await axios.get(`${API_BASE_URL}/employees/${employeeId}`);
       const employeeData = response.data;
       setEmployee(employeeData);
 
       // Update sessionStorage with profile picture and user details
-      sessionStorage.setItem("profilePic", employeeData.profile_pic);
-      sessionStorage.setItem("firstName", employeeData.firstName);
-      sessionStorage.setItem("lastName", employeeData.lastName);
+      sessionStorage.setItem("profilePic", employeeData.profile_pic || "");
+      sessionStorage.setItem("firstName", employeeData.firstName || "");
+      sessionStorage.setItem("lastName", employeeData.lastName || "");
     } catch (error) {
       console.error("Error fetching employee details:", error);
+      alert("Failed to fetch employee details. Please try again later.");
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEmployee({ ...employee, [name]: value });
+    setEmployee((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleProfilePhotoChange = (e) => {
@@ -47,28 +47,27 @@ const ProfileUpdate = () => {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
-    try {
-      const formData = new FormData();
-      formData.append("firstName", employee.firstName);
-      formData.append("lastName", employee.lastName);
-      formData.append("email", employee.email);
-      formData.append("phoneNumber", employee.phoneNumber);
-      formData.append("location", employee.location);
-      if (profilePhoto) {
-        formData.append("profilePhoto", profilePhoto);
-      }
 
-      const response = await axios.put(
-        `http://localhost:5000/api/employees/${employeeId}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+    const formData = new FormData();
+    formData.append("firstName", employee.firstName);
+    formData.append("lastName", employee.lastName);
+    formData.append("email", employee.email);
+    formData.append("phoneNumber", employee.phoneNumber);
+    formData.append("location", employee.location);
+    if (profilePhoto) {
+      formData.append("profilePhoto", profilePhoto);
+    }
+
+    try {
+      const response = await axios.put(`${API_BASE_URL}/employees/${employeeId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       alert("Profile updated successfully!");
       fetchEmployeeDetails(); // Refresh the profile data
 
       // If profile photo was updated, update sessionStorage
-      if (profilePhoto) {
+      if (response.data.profile_pic) {
         sessionStorage.setItem("profilePic", response.data.profile_pic);
       }
     } catch (error) {
@@ -120,9 +119,7 @@ const ProfileUpdate = () => {
             type="tel"
             id="phoneNumber"
             name="phoneNumber"
-            value={
-              employee.phoneNumber || Math.floor(Math.random() * 1000000000)
-            }
+            value={employee.phoneNumber}
             onChange={handleInputChange}
             required
           />

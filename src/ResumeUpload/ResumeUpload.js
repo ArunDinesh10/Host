@@ -22,11 +22,15 @@ const ResumeUpload = ({ title }) => {
 
         try {
             setUploadStatus("Uploading...");
-            const response = await axios.post('http://localhost:5000/api/upload', formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data"
+            const response = await axios.post(
+                'https://host-wo44.onrender.com/api/upload', // Updated to use the production API URL
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
                 }
-            });
+            );
             setUploadStatus("Upload successful!");
             console.log("Uploaded file response:", response.data);
         } catch (error) {
@@ -44,7 +48,9 @@ const ResumeUpload = ({ title }) => {
                 className="file-input"
                 accept=".pdf,.doc,.docx"
             />
-            <button onClick={handleUpload} className="upload-button">Upload Resume</button>
+            <button onClick={handleUpload} className="upload-button">
+                Upload Resume
+            </button>
             {uploadStatus && <p className="upload-status">{uploadStatus}</p>}
         </div>
     );

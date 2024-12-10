@@ -1,25 +1,27 @@
-// JobApplicationPage.js
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import './JobApplicationPage.css';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import "./JobApplicationPage.css";
 
 const JobApplicationPage = () => {
   const { jobId } = useParams(); // Fetch jobId from the URL params
   const [job, setJob] = useState(null);
-  const [applicantName, setApplicantName] = useState('');
-  const [applicantEmail, setApplicantEmail] = useState('');
-  const [applicationStatus, setApplicationStatus] = useState('');
+  const [applicantName, setApplicantName] = useState("");
+  const [applicantEmail, setApplicantEmail] = useState("");
+  const [applicationStatus, setApplicationStatus] = useState("");
   const navigate = useNavigate();
 
   // Fetch job details when the component mounts
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/jobs/${jobId}`);
+        const response = await fetch(`https://host-wo44.onrender.com/api/jobs/${jobId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch job details");
+        }
         const data = await response.json();
         setJob(data);
       } catch (error) {
-        console.error('Error fetching job:', error);
+        console.error("Error fetching job:", error);
       }
     };
     fetchJob();
@@ -29,20 +31,26 @@ const JobApplicationPage = () => {
   const handleApplicationSubmit = async (e) => {
     e.preventDefault();
     try {
-      await fetch('http://localhost:5000/applications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const userId = sessionStorage.getItem("user_id");
+      const response = await fetch("https://host-wo44.onrender.com/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: 1, // Replace with the actual user ID in a real app
+          user_id: userId,
           job_id: jobId,
-          status: 'applied',
+          status: "applied",
         }),
       });
-      setApplicationStatus('Application submitted successfully!');
-      setTimeout(() => navigate('/'), 3000); // Navigate back to homepage after submission
+
+      if (response.ok) {
+        setApplicationStatus("Application submitted successfully!");
+        setTimeout(() => navigate("/"), 3000); // Navigate back to homepage after submission
+      } else {
+        throw new Error("Failed to submit application");
+      }
     } catch (error) {
-      console.error('Error submitting application:', error);
-      setApplicationStatus('Failed to submit application');
+      console.error("Error submitting application:", error);
+      setApplicationStatus("Failed to submit application");
     }
   };
 
@@ -50,9 +58,13 @@ const JobApplicationPage = () => {
 
   return (
     <div className="job-application-page">
-      <h2>{job.job_role}</h2>
-      <p><strong>Description:</strong> {job.description}</p>
-      <p><strong>Requirements:</strong> {job.requirements}</p>
+      <h2>{job.job_role || "Job Role"}</h2>
+      <p>
+        <strong>Description:</strong> {job.description || "No description available"}
+      </p>
+      <p>
+        <strong>Requirements:</strong> {job.requirements || "No requirements specified"}
+      </p>
 
       <form onSubmit={handleApplicationSubmit} className="application-form">
         <label>
@@ -76,7 +88,7 @@ const JobApplicationPage = () => {
         <button type="submit">Apply</button>
       </form>
 
-      {applicationStatus && <p>{applicationStatus}</p>}
+      {applicationStatus && <p className="application-status">{applicationStatus}</p>}
     </div>
   );
 };
