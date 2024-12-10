@@ -44,12 +44,31 @@ const JobPostings = () => {
 
   const handleCreateJob = async (e) => {
     e.preventDefault();
+  
+    // Ensure all fields are filled out
+    if (
+      !newJob.job_title ||
+      !newJob.job_description ||
+      !newJob.job_category ||
+      !newJob.location ||
+      !newJob.salary_range ||
+      !newJob.requirements ||
+      !employerId
+    ) {
+      alert("Please fill out all fields before submitting.");
+      return;
+    }
+  
     try {
-      await axios.post(`${API_BASE_URL}/jobs`, {
+      console.log("Payload being sent:", { employer_id: employerId, ...newJob }); // Debug payload
+  
+      const response = await axios.post(`${API_BASE_URL}/jobs`, {
         employer_id: employerId,
         ...newJob,
       });
-      fetchJobs();
+  
+      console.log("Job created successfully:", response.data);
+      fetchJobs(); // Refresh job list
       setNewJob({
         job_title: "",
         job_description: "",
@@ -61,9 +80,10 @@ const JobPostings = () => {
       setAccordionOpen(false);
     } catch (error) {
       console.error("Error creating job:", error);
-      alert("Failed to create job. Please try again.");
+      alert(error.response?.data?.error || "Failed to create job. Please try again.");
     }
   };
+  
 
   const handleDeleteJob = async (jobId) => {
     if (window.confirm("Are you sure you want to delete this job?")) {
