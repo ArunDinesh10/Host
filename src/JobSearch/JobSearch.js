@@ -1,213 +1,84 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "./JobSearch.css";
+import "./SavedJobs.css";
 
-const JobSearch = () => {
-  const [jobs, setJobs] = useState([]);
+const SavedJobs = () => {
+  const [savedJobs, setSavedJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({ category: "", location: "" });
-  const [appliedJobs, setAppliedJobs] = useState(new Set());
-  const [savedJobs, setSavedJobs] = useState(new Set());
-  const userId = 1;
+  const userId = sessionStorage.getItem("userId"); // Fetch userId from sessionStorage
+  const API_BASE_URL = "https://host-wo44.onrender.com/api"; // API base URL
 
-  // Backend API base URL
-  const API_BASE_URL = "https://host-wo44.onrender.com/api";
-
+  // Redirect to login if user is not logged in
   useEffect(() => {
-    fetchJobs();
-  }, [filters]);
-
-  useEffect(() => {
-    fetchAppliedJobs();
-    fetchSavedJobs();
+    if (!userId) {
+      alert("User not logged in. Redirecting to login.");
+      window.location.href = "/login";
+    } else {
+      fetchSavedJobs();
+    }
   }, [userId]);
 
-  const fetchJobs = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/jobs`, {
-        params: { ...filters },
-      });
-      setJobs(response.data);
-    } catch (error) {
-      console.error("Error fetching jobs:", error);
-    }
-  };
-
-  const fetchAppliedJobs = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/applications/${userId}`);
-      setAppliedJobs(new Set(response.data));
-    } catch (error) {
-      console.error("Error fetching applied jobs:", error);
-    }
-  };
-
+  // Fetch saved jobs for the logged-in user
   const fetchSavedJobs = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/saved-jobs/${userId}`);
-      setSavedJobs(new Set(response.data.map((job) => job.job_id)));
+      setSavedJobs(response.data);
     } catch (error) {
       console.error("Error fetching saved jobs:", error);
+      alert("Failed to fetch saved jobs. Please try again.");
     }
   };
 
-  const handleApply = async (jobId) => {
-    if (appliedJobs.has(jobId)) {
-      try {
-        await axios.delete(`${API_BASE_URL}/applications/applied`, {
-          data: { userId, jobId },
-        });
-        setAppliedJobs((prev) => {
-          const updated = new Set(prev);
-          updated.delete(jobId);
-          return updated;
-        });
-      } catch (error) {
-        console.error("Error unapplying for job:", error);
-      }
-    } else {
-      try {
-        await axios.post(`${API_BASE_URL}/applications`, {
-          userId,
-          jobId,
-        });
-        setAppliedJobs((prev) => new Set(prev).add(jobId));
-      } catch (error) {
-        console.error("Error applying for job:", error);
-      }
-    }
-  };
-
-  const handleSave = async (jobId) => {
-    if (savedJobs.has(jobId)) {
-      try {
-        await axios.delete(`${API_BASE_URL}/saved-jobs`, {
-          data: { userId, jobId },
-        });
-        setSavedJobs((prev) => {
-          const updated = new Set(prev);
-          updated.delete(jobId);
-          return updated;
-        });
-      } catch (error) {
-        console.error("Error unsaving job:", error);
-      }
-    } else {
-      try {
-        await axios.post(`${API_BASE_URL}/saved-jobs`, {
-          userId,
-          jobId,
-        });
-        setSavedJobs((prev) => new Set(prev).add(jobId));
-      } catch (error) {
-        console.error("Error saving job:", error);
-      }
-    }
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const categoryInput = document.getElementById("categoryInput").value.trim();
-    const locationInput = document.getElementById("locationInput").value.trim();
-
-    setFilters({
-      category: categoryInput,
-      location: locationInput,
-    });
-  };
-
-  const handleClearFilters = () => {
-    setFilters({ category: "", location: "" });
-    document.getElementById("categoryInput").value = "";
-    document.getElementById("locationInput").value = "";
-  };
-
-  const filteredJobs = jobs.filter((job) =>
-    job.job_title.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter jobs based on search query
+  const filteredJobs = savedJobs.filter(
+    (job) =>
+      job.job_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.job_category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="job-postings-container">
-      <main className="content">
-        <div className="list-section">
-          <h2>Job Search</h2>
-          <form className="filters" onSubmit={handleSearch}>
-            <input
-              id="categoryInput"
-              type="text"
-              placeholder="Search by Category"
-              defaultValue={filters.category}
-            />
-            <input
-              id="locationInput"
-              type="text"
-              placeholder="Search by Location"
-              defaultValue={filters.location}
-            />
-            <button type="submit">Search</button>
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              style={{
-                marginLeft: "10px",
-                padding: "10px 20px",
-                backgroundColor: "#f44336",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              Clear
-            </button>
-          </form>
-
+    <div className="page-container">
+      <div className="content-wrap">
+        <div className="saved-jobs-container">
           <div className="search-bar">
             <input
               type="text"
-              placeholder="Search for jobs..."
+              placeholder="Search saved jobs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
             />
           </div>
-
-          <div className="job-cards-container">
-            {filteredJobs.length > 0 ? (
-              filteredJobs.map((job) => (
-                <div className="job-card" key={job.job_id}>
-                  <h3 className="job-title">{job.job_title}</h3>
-                  <p className="job-category">
-                    <strong>Category:</strong> {job.job_category}
-                  </p>
-                  <p className="job-location">
-                    <strong>Location:</strong> {job.location}
-                  </p>
-                  <p className="job-salary">
-                    <strong>Salary:</strong> {job.salary_range}
-                  </p>
-                  <button
-                    className="apply-button"
-                    onClick={() => handleApply(job.job_id)}
-                  >
-                    {appliedJobs.has(job.job_id) ? "Applied" : "Apply"}
-                  </button>
-                  <button
-                    className="save-button"
-                    onClick={() => handleSave(job.job_id)}
-                  >
-                    {savedJobs.has(job.job_id) ? "Saved" : "Save"}
-                  </button>
-                </div>
-              ))
-            ) : (
-              <p>No jobs found matching your criteria.</p>
-            )}
-          </div>
+          <h2>Saved Jobs</h2>
+          {filteredJobs.length > 0 ? (
+            <table className="saved-jobs-table">
+              <thead>
+                <tr>
+                  <th>Job Title</th>
+                  <th>Category</th>
+                  <th>Location</th>
+                  <th>Salary Range</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredJobs.map((job) => (
+                  <tr key={job.job_id}>
+                    <td>{job.job_title}</td>
+                    <td>{job.job_category}</td>
+                    <td>{job.location}</td>
+                    <td>{job.salary_range}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No saved jobs found.</p>
+          )}
         </div>
-      </main>
+      </div>
     </div>
   );
 };
 
-export default JobSearch;
+export default SavedJobs;
